@@ -1,6 +1,5 @@
-(ns dario-castano.eyebeemq)
-
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (prn x "Hello, World!"))
+(ns dario-castano.eyebeemq
+  (:require [dario-castano.connection.mqconnection :as mqconnection]))
+  
+(defn connect [config] 
+  (mqconnection/startmq config))
