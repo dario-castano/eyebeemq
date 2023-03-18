@@ -22,19 +22,19 @@
 
 (defn set-jms-properties [cf config] 
   (try 
+    (if (nil? (config :ccdt-url))
+        (set-manual-connection cf config)
+        (set-ccdt-url cf config))
     (doto cf
-          (if (nil? (config :ccdt-url))
-           (set-manual-connection cf config)
-           (set-ccdt-url cf config))
-          (.setIntProperty (WMQConstants/WMQ_CONNECTION_MODE) (WMQConstants/WMQ_CM_CLIENT))
-          (.setStringProperty (WMQConstants/WMQ_QUEUE_MANAGER) (config :queue-manager))
-          (.setStringProperty (WMQConstants/WMQ_APPLICATIONNAME) (config :app-name))
-          (.setBooleanProperty (WMQConstants/USER_AUTHENTICATION_MQCSP) true)
-          (.setStringProperty (WMQConstants/USERID) (config :app-user))
-          (.setStringProperty (WMQConstants/PASSWORD) (config :app-password))
-          (when (or (nil? (config :cipher-suite)) (empty? (config :cipher-suite)))
-            (.setStringProperty (WMQConstants/WMQ_SSL_CIPHER_SUITE) (config :cipher-suite)))
-          )
+      (.setIntProperty (WMQConstants/WMQ_CONNECTION_MODE) (WMQConstants/WMQ_CM_CLIENT))
+      (.setStringProperty (WMQConstants/WMQ_QUEUE_MANAGER) (config :queue-manager))
+      (.setStringProperty (WMQConstants/WMQ_APPLICATIONNAME) (config :app-name))
+      (.setBooleanProperty (WMQConstants/USER_AUTHENTICATION_MQCSP) true)
+      (.setStringProperty (WMQConstants/USERID) (config :app-user))
+      (.setStringProperty (WMQConstants/PASSWORD) (config :app-password))
+      (when (or (nil? (config :cipher-suite)) (empty? (config :cipher-suite)))
+        (.setStringProperty (WMQConstants/WMQ_SSL_CIPHER_SUITE) (config :cipher-suite)))
+      )
     (catch JMSException jmsex ((log/error (str (. jmsex getMessage)))))))
 
 
