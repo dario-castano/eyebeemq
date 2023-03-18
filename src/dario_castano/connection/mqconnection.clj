@@ -12,15 +12,24 @@
         (.createConnectionFactory))
     (catch JMSException jmsex ((log/error (str (. jmsex getMessage)))))))
 
+(defn set-manual-connection [cf config]
+  (doto cf
+        (.setStringProperty (WMQConstants/WMQ_CONNECTION_NAME_LIST) (config :connection-string))
+        (.setStringProperty (WMQConstants/WMQ_CHANNEL) (config :channel))))
+
+(defn set-ccdt-url [cf config]
+  (.setStringProperty cf (WMQConstants/WMQ_CCDTURL) (config :ccdt-url)))
+
 (defn set-jms-properties [cf config] 
   (try 
     (doto cf
-          (.setStringProperty (WMQConstants/WMQ_CONNECTION_NAME_LIST) (config :connection-string))
-          (.setStringProperty (WMQConstants/WMQ_CHANNEL) (config :channel))
+          (if (nil? (config :ccdt-url))
+           (set-manual-connection cf config)
+           (set-ccdt-url cf config))
           (.setIntProperty (WMQConstants/WMQ_CONNECTION_MODE) (WMQConstants/WMQ_CM_CLIENT))
           (.setStringProperty (WMQConstants/WMQ_QUEUE_MANAGER) (config :queue-manager))
           (.setStringProperty (WMQConstants/WMQ_APPLICATIONNAME) (config :app-name))
-          (.setBooleanProperty (WMQConstants/USER_AUTHENTICATION_MQCSP true))
+          (.setBooleanProperty (WMQConstants/USER_AUTHENTICATION_MQCSP) true)
           (.setStringProperty (WMQConstants/USERID) (config :app-user))
           (.setStringProperty (WMQConstants/PASSWORD) (config :app-password))
           (when (or (nil? (config :cipher-suite)) (empty? (config :cipher-suite)))
